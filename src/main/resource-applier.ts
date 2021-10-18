@@ -66,11 +66,11 @@ export class ResourceApplier {
 
     logger.debug(`[RESOURCE-APPLIER]: shooting manifests with: ${kubectlPath}`, { args });
 
-    const execEnv: NodeJS.ProcessEnv = Object.assign({}, process.env);
+    const execEnv = { ...process.env };
     const httpsProxy = this.cluster.preferences?.httpsProxy;
 
     if (httpsProxy) {
-      execEnv["HTTPS_PROXY"] = httpsProxy;
+      execEnv.HTTPS_PROXY = httpsProxy;
     }
 
     try {
