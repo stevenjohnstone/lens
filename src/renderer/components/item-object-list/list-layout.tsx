@@ -54,7 +54,7 @@ export interface ItemListLayoutProps<I extends ItemObject> {
   // header (title, filtering, searching, etc.)
   showHeader?: boolean;
   headerClassName?: IClassName;
-  renderHeaderTitle?: ReactNode | ((parent: NonInjectedItemListLayout<I>) => ReactNode);
+  renderHeaderTitle?: ReactNode | ((parent: ItemListLayoutHeader<I>) => ReactNode);
   customizeHeader?: HeaderCustomizer | HeaderCustomizer[];
 
   // items list configuration
@@ -78,7 +78,7 @@ export interface ItemListLayoutProps<I extends ItemObject> {
 
   // other
   customizeRemoveDialog?: (selectedItems: I[]) => Partial<ConfirmDialogParams>;
-  renderFooter?: (parent: NonInjectedItemListLayout<I>) => React.ReactNode;
+  renderFooter?: () => React.ReactNode;
 
   /**
    * Message to display when a store failed to load
@@ -267,7 +267,7 @@ class NonInjectedItemListLayout<I extends ItemObject> extends React.Component<It
           failedToLoadMessage={this.props.failedToLoadMessage}
         />
 
-        {this.props.renderFooter?.(this)}
+        {this.props.renderFooter?.()}
       </div>
     ));
   }

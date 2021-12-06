@@ -3,19 +3,16 @@
  * Licensed under MIT License. See LICENSE in root directory for more information.
  */
 
-/**
- * The props for StatusBar item component
- */
-export interface StatusBarItemProps {}
+import type { RequireExactlyOne } from "type-fest";
 
 /**
- * The type defining the registration of a status bar item
+ * The components for a StatusBar registration
  */
 export interface StatusBarComponents {
   /**
-   * The component for this registrations
+   * The actual component used for rendering within the status bar
    */
-  Item: React.ComponentType<StatusBarItemProps>;
+  Item?: React.ComponentType;
 
   /**
    * The side of the bottom bar to place this component.
@@ -25,17 +22,14 @@ export interface StatusBarComponents {
   position?: "left" | "right";
 }
 
-/**
- * The type for registering status bar items from the LensRendererExtension
- */
-export interface StatusBarRegistration {
+export type StatusBarRegistration = RequireExactlyOne<{
   /**
-   * @deprecated use {@link StatusBarRegistration.components} instead
+   * @deprecated use {@link StatusBarRegistration.components} instead as that is a component instead of a react node
    */
-  item?: React.ReactNode | (() => React.ReactNode);
+  item?: React.ReactNode;
 
   /**
-   * The newer API, allows for registering a component instead of a ReactNode
+   * The components for a registration
    */
   components?: StatusBarComponents;
-}
+}>;
