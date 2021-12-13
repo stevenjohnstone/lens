@@ -5,70 +5,20 @@
 
 import styles from "./avatar.module.scss";
 
-import React, { HTMLAttributes, ImgHTMLAttributes } from "react";
+import React, { HTMLAttributes } from "react";
 import randomColor from "randomcolor";
-import GraphemeSplitter from "grapheme-splitter";
-import { cssNames, iter } from "../../utils";
+import { cssNames } from "../../utils";
 
 export interface AvatarProps extends HTMLAttributes<HTMLElement> {
-  title: string;
   colorHash?: string;
   size?: number;
-  src?: string;
   background?: string;
   variant?: "circle" | "rounded" | "square";
-  imgProps?: ImgHTMLAttributes<HTMLImageElement>;
   disabled?: boolean;
 }
 
-function getNameParts(name: string): string[] {
-  const byWhitespace = name.split(/\s+/);
-
-  if (byWhitespace.length > 1) {
-    return byWhitespace;
-  }
-
-  const byDashes = name.split(/[-_]+/);
-
-  if (byDashes.length > 1) {
-    return byDashes;
-  }
-
-  return name.split(/@+/);
-}
-
-function getLabelFromTitle(title: string) {
-  if (!title) {
-    return "??";
-  }
-
-  const [rawFirst, rawSecond, rawThird] = getNameParts(title);
-  const splitter = new GraphemeSplitter();
-  const first = splitter.iterateGraphemes(rawFirst);
-  const second = rawSecond ? splitter.iterateGraphemes(rawSecond): first;
-  const third = rawThird ? splitter.iterateGraphemes(rawThird) : iter.newEmpty();
-
-  return [
-    ...iter.take(first, 1),
-    ...iter.take(second, 1),
-    ...iter.take(third, 1),
-  ].filter(Boolean).join("");
-}
-
 export function Avatar(props: AvatarProps) {
-  const { title, variant = "rounded", size = 32, colorHash, children, background, imgProps, src, className, disabled, ...rest } = props;
-
-  const getBackgroundColor = () => {
-    return background || randomColor({ seed: colorHash, luminosity: "dark" });
-  };
-
-  const renderContents = () => {
-    if (src) {
-      return <img src={src} {...imgProps} alt={title}/>;
-    }
-
-    return children || getLabelFromTitle(title);
-  };
+  const { variant = "rounded", size = 32, colorHash, children, background, className, disabled, ...rest } = props;
 
   return (
     <div
@@ -77,10 +27,14 @@ export function Avatar(props: AvatarProps) {
         [styles.rounded]: variant == "rounded",
         [styles.disabled]: disabled,
       }, className)}
-      style={{ width: `${size}px`, height: `${size}px`, backgroundColor: getBackgroundColor() }}
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        backgroundColor: background || randomColor({ seed: colorHash, luminosity: "dark" }),
+      }}
       {...rest}
     >
-      {renderContents()}
+      {children}
     </div>
   );
 }

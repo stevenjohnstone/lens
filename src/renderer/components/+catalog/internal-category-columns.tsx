@@ -14,6 +14,8 @@ import { Icon } from "../icon";
 import { prevDefault } from "../../utils";
 import { getLabelBadges } from "./helpers";
 import { KubeObject } from "../../../common/k8s-api/kube-object";
+import { getIconColourHash } from "../../../common/catalog/helpers";
+import { EntityIcon } from "../entity-icon";
 
 function renderEntityName(entity: CatalogEntity) {
   const hotbarStore = HotbarStore.getInstance();
@@ -27,14 +29,12 @@ function renderEntityName(entity: CatalogEntity) {
   return (
     <>
       <Avatar
-        title={entity.getName()}
-        colorHash={`${entity.getName()}-${entity.getSource()}`}
-        src={entity.spec.icon?.src}
+        colorHash={getIconColourHash(entity)}
         background={entity.spec.icon?.background}
         className={styles.catalogAvatar}
         size={24}
       >
-        {entity.spec.icon?.material && <Icon material={entity.spec.icon?.material} small/>}
+        <EntityIcon entity={entity}/>
       </Avatar>
       <span>{entity.getName()}</span>
       <Icon

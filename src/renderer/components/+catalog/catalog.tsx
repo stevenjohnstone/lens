@@ -20,14 +20,11 @@ import { CatalogAddButton } from "./catalog-add-button";
 import type { RouteComponentProps } from "react-router";
 import { Notifications } from "../notifications";
 import { MainLayout } from "../layout/main-layout";
-import { prevDefault } from "../../utils";
 import { CatalogEntityDetails } from "./catalog-entity-details";
 import { browseCatalogTab, catalogURL, CatalogViewRouteParam } from "../../../common/routes";
 import { CatalogMenu } from "./catalog-menu";
 import { RenderDelay } from "../render-delay/render-delay";
-import { Icon } from "../icon";
 import { HotbarToggleMenuItem } from "./hotbar-toggle-menu-item";
-import { Avatar } from "../avatar";
 import { withInjectables } from "@ogre-tools/injectable-react";
 import catalogPreviousActiveTabStorageInjectable from "./catalog-previous-active-tab-storage/catalog-previous-active-tab-storage.injectable";
 import catalogEntityStoreInjectable from "./catalog-entity-store/catalog-entity-store.injectable";
@@ -37,7 +34,7 @@ import type { RegisteredCustomCategoryViewDecl } from "./custom-views.injectable
 import customCategoryViewsInjectable from "./custom-views.injectable";
 import type { CustomCategoryViewComponents } from "./custom-views";
 
-interface Props extends RouteComponentProps<CatalogViewRouteParam> {}
+export interface CatalogProps extends RouteComponentProps<CatalogViewRouteParam> {}
 
 interface Dependencies {
   catalogPreviousActiveTabStorage: { set: (value: string ) => void };
@@ -47,11 +44,11 @@ interface Dependencies {
 }
 
 @observer
-class NonInjectedCatalog extends React.Component<Props & Dependencies> {
+class NonInjectedCatalog extends React.Component<CatalogProps & Dependencies> {
   @observable private contextMenu: CatalogEntityContextMenuContext;
   @observable activeTab?: string;
 
-  constructor(props: Props & Dependencies) {
+  constructor(props: CatalogProps & Dependencies) {
     super(props);
     makeObservable(this);
   }
@@ -188,34 +185,6 @@ class NonInjectedCatalog extends React.Component<Props & Dependencies> {
     );
   };
 
-  renderName(entity: CatalogEntity) {
-    const isItemInHotbar = HotbarStore.getInstance().isAddedToActive(entity);
-
-    return (
-      <>
-        <Avatar
-          title={entity.getName()}
-          colorHash={`${entity.getName()}-${entity.getSource()}`}
-          src={entity.spec.icon?.src}
-          background={entity.spec.icon?.background}
-          className={styles.catalogAvatar}
-          size={24}
-        >
-          {entity.spec.icon?.material && <Icon material={entity.spec.icon?.material} small/>}
-        </Avatar>
-        <span>{entity.getName()}</span>
-        <Icon
-          small
-          className={styles.pinIcon}
-          material={!isItemInHotbar && "push_pin"}
-          svg={isItemInHotbar ? "push_off" : "push_pin"}
-          tooltip={isItemInHotbar ? "Remove from Hotbar" : "Add to Hotbar"}
-          onClick={prevDefault(() => isItemInHotbar ? this.removeFromHotbar(entity) : this.addToHotbar(entity))}
-        />
-      </>
-    );
-  }
-
   renderViews = () => {
     const { catalogEntityStore, customCategoryViews } = this.props;
     const { activeCategory } = catalogEntityStore;
@@ -277,7 +246,7 @@ class NonInjectedCatalog extends React.Component<Props & Dependencies> {
       return null;
     }
 
-    const selectedEntity = this.props.catalogEntityStore.selectedItem;
+    const { selectedItem } = this.props.catalogEntityStore;
 
     return (
       <MainLayout sidebar={this.renderNavigation()}>
@@ -285,11 +254,11 @@ class NonInjectedCatalog extends React.Component<Props & Dependencies> {
           {this.renderViews()}
         </div>
         {
-          selectedEntity
+          selectedItem
             ? <CatalogEntityDetails
-              entity={selectedEntity}
+              entity={selectedItem}
               hideDetails={() => this.props.catalogEntityStore.selectedItemId = null}
-              onRun={() => this.props.catalogEntityStore.onRun(selectedEntity)}
+              onRun={() => this.props.catalogEntityStore.onRun(selectedItem)}
             />
             : (
               <RenderDelay>
@@ -304,7 +273,7 @@ class NonInjectedCatalog extends React.Component<Props & Dependencies> {
   }
 }
 
-export const Catalog = withInjectables<Dependencies, Props>( NonInjectedCatalog, {
+export const Catalog = withInjectables<Dependencies, CatalogProps>( NonInjectedCatalog, {
   getProps: (di, props) => ({
     catalogEntityStore: di.inject(catalogEntityStoreInjectable),
     catalogPreviousActiveTabStorage: di.inject(catalogPreviousActiveTabStorageInjectable),

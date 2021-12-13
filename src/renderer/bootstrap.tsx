@@ -36,6 +36,7 @@ import userStoreInjectable from "../common/user-store/user-store.injectable";
 import initRootFrameInjectable from "./frames/root-frame/init-root-frame/init-root-frame.injectable";
 import initClusterFrameInjectable from "./frames/cluster-frame/init-cluster-frame/init-cluster-frame.injectable";
 import commandOverlayInjectable from "./components/command-palette/command-overlay.injectable";
+import { EntityPreferencesStore } from "../common/entity-preferences-store";
 
 if (process.isMainFrame) {
   SentryInit();
@@ -105,6 +106,8 @@ export async function bootstrap(di: DependencyInjectionContainer) {
   const clusterStore = di.inject(clusterStoreInjectable);
 
   await clusterStore.loadInitialOnRenderer();
+
+  EntityPreferencesStore.createInstance();
 
   // HotbarStore depends on: ClusterStore
   HotbarStore.createInstance();
