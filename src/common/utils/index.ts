@@ -41,8 +41,9 @@ export * from "./splitArray";
 export * from "./tar";
 export * from "./toJS";
 export * from "./type-narrowing";
-export * from "./types";
 export * from "./wait-for-path";
+
+export type { Tuple } from "./tuple";
 
 import * as iter from "./iter";
 import * as array from "./array";

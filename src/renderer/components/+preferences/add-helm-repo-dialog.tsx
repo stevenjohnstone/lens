@@ -21,7 +21,7 @@ import { Notifications } from "../notifications";
 import { HelmRepo, HelmRepoManager } from "../../../main/helm/helm-repo-manager";
 import { requestOpenFilePickingDialog } from "../../ipc";
 
-interface Props extends Partial<DialogProps> {
+export interface AddHelmRepoDialogProps extends Partial<DialogProps> {
   onAddRepo: Function
 }
 
@@ -36,13 +36,13 @@ const dialogState = observable.object({
 });
 
 @observer
-export class AddHelmRepoDialog extends React.Component<Props> {
+export class AddHelmRepoDialog extends React.Component<AddHelmRepoDialogProps> {
   private emptyRepo = { name: "", url: "", username: "", password: "", insecureSkipTlsVerify: false, caFile:"", keyFile: "", certFile: "" };
 
   private static keyExtensions = ["key", "keystore", "jks", "p12", "pfx", "pem"];
   private static certExtensions = ["crt", "cer", "ca-bundle", "p7b", "p7c", "p7s", "p12", "pfx", "pem"];
 
-  constructor(props: Props) {
+  constructor(props: AddHelmRepoDialogProps) {
     super(props);
     makeObservable(this);
   }
