@@ -76,9 +76,6 @@ export async function bootstrap(di: DependencyInjectionContainer) {
   logger.info(`${logPrefix} initializing KubeObjectDetailRegistry`);
   initializers.initKubeObjectDetailRegistry();
 
-  logger.info(`${logPrefix} initializing CatalogEntityDetailRegistry`);
-  initializers.initCatalogEntityDetailRegistry();
-
   logger.info(`${logPrefix} initializing CatalogCategoryRegistryEntries`);
   initializers.initCatalogCategoryRegistryEntries();
 
