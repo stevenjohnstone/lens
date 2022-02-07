@@ -7,8 +7,7 @@ import { computed } from "mobx";
 import rendererExtensionsInjectable from "../../../extensions/renderer-extensions.injectable";
 import { OverviewStatuses } from "./overview-statuses";
 import { WorkloadEvents } from "../../initializers/workload-events";
-import { orderBy } from "lodash/fp";
-import type { WorkloadsOverviewDetailRegistration } from "./workloads-overview-detail-registration";
+import { orderByPriority } from "../../utils/order-by-priority";
 
 const detailComponentsInjectable = getInjectable({
   instantiate: (di) => {
@@ -24,7 +23,7 @@ const detailComponentsInjectable = getInjectable({
         ...extensionRegistrations,
       ];
 
-      return getRegistrationsInPriorityOrder(allRegistrations).map(
+      return orderByPriority(allRegistrations).map(
         (item) => item.components.Details,
       );
     });
@@ -46,23 +45,5 @@ const coreRegistrations = [
     },
   },
 ];
-
-const toRegistrationWithDefaultPriority = ({
-  priority = 50,
-  ...rest
-}: WorkloadsOverviewDetailRegistration) => ({
-  priority,
-  ...rest,
-});
-
-const getRegistrationsInPriorityOrder = (
-  allRegistrations: WorkloadsOverviewDetailRegistration[],
-) =>
-  orderBy(
-    "priority",
-    "desc",
-
-    allRegistrations.map(toRegistrationWithDefaultPriority),
-  );
 
 export default detailComponentsInjectable;
