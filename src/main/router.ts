@@ -153,8 +153,13 @@ export class Router {
         filePath = `${publicPath}/${appName}.html`;
       }
     }
-
   }
+
+  addRoute = (route: Route) => {
+    this.router.add({ method: route.method, path: route.path }, (request: LensApiRequest) => {
+      route.handler(request);
+    });
+  };
 
   protected addRoutes() {
     // Static assets
@@ -190,4 +195,10 @@ export class Router {
     this.router.add({ method: "post", path: `${apiPrefix}/stack` }, ResourceApplierApiRoute.applyResource);
     this.router.add({ method: "patch", path: `${apiPrefix}/stack` }, ResourceApplierApiRoute.patchResource);
   }
+}
+
+export interface Route {
+  path: string;
+  method: "get" | "post" | "put" | "patch" | "delete";
+  handler: (request: LensApiRequest) => Promise<void>;
 }
