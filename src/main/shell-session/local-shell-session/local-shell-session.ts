@@ -5,7 +5,7 @@
 
 import path from "path";
 import { helmCli } from "../../helm/helm-cli";
-import { UserStore } from "../../../common/user-store";
+import { UserStore } from "../../../common/user-preferences";
 import { ShellSession } from "../shell-session";
 
 export class LocalShellSession extends ShellSession {

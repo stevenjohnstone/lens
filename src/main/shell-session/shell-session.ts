@@ -12,7 +12,7 @@ import { clearKubeconfigEnvVars } from "../utils/clear-kube-env-vars";
 import path from "path";
 import os from "os";
 import { isMac, isWindows } from "../../common/vars";
-import { UserStore } from "../../common/user-store";
+import { UserStore } from "../../common/user-preferences";
 import * as pty from "node-pty";
 import { appEventBus } from "../../common/app-event-bus/event-bus";
 import logger from "../logger";
