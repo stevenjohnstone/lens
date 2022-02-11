@@ -3,7 +3,11 @@
  * Licensed under MIT License. See LICENSE in root directory for more information.
  */
 import { getInjectable } from "@ogre-tools/injectable";
-import type { LensApiRequest } from "../router";
+import type {
+  LensApiRequest,
+  LensApiResult, SupportedFileExtension,
+} from "../router";
+import { contentTypes } from "../router";
 import logger from "../logger";
 import { routeInjectionToken } from "../router/router.injectable";
 import {
@@ -15,48 +19,31 @@ import {
 import path from "path";
 import readFileInjectable from "../../common/fs/read-file.injectable";
 
-function getMimeType(filename: string) {
-  const mimeTypes: Record<string, string> = {
-    html: "text/html",
-    txt: "text/plain",
-    css: "text/css",
-    gif: "image/gif",
-    jpg: "image/jpeg",
-    png: "image/png",
-    svg: "image/svg+xml",
-    js: "application/javascript",
-    woff2: "font/woff2",
-    ttf: "font/ttf",
-  };
-
-  return mimeTypes[path.extname(filename).slice(1)] || "text/plain";
-}
-
 interface Dependencies {
   readFile: (path: string) => Promise<Buffer>
 }
 
 const staticFileRoute = ({ readFile }: Dependencies) => async ({
   params,
-  response,
   raw: { req },
-}: LensApiRequest): Promise<void> => {
+}: LensApiRequest): Promise<LensApiResult> => {
   const staticPath = path.resolve(__static);
+
 
   let filePath = params.path;
 
   for (let retryCount = 0; retryCount < 5; retryCount += 1) {
     const asset = path.join(staticPath, filePath);
+
     const normalizedFilePath = path.resolve(asset);
 
     if (!normalizedFilePath.startsWith(staticPath)) {
-      response.statusCode = 404;
-
-      return response.end();
+      return { statusCode: 404 };
     }
 
     try {
       const filename = path.basename(req.url);
+
       // redirect requests to [appName].js, [appName].html /sockjs-node/ to webpack-dev-server (for hot-reload support)
       const toWebpackDevServer =
         filename.includes(appName) ||
@@ -64,30 +51,35 @@ const staticFileRoute = ({ readFile }: Dependencies) => async ({
         req.url.includes("sockjs-node");
 
       if (isDevelopment && toWebpackDevServer) {
-        const redirectLocation = `http://localhost:${webpackDevServerPort}${req.url}`;
+        return {
+          statusCode: 307,
 
-        response.statusCode = 307;
-        response.setHeader("Location", redirectLocation);
-
-        return response.end();
+          headers: {
+            Location: `http://localhost:${webpackDevServerPort}${req.url}`,
+          },
+        };
       }
 
-      const data = await readFile(asset);
+      const fileExtension = path
+        .extname(asset)
+        .slice(1) as SupportedFileExtension;
 
-      response.setHeader("Content-Type", getMimeType(asset));
-      response.write(data);
-      response.end();
+      const contentType = contentTypes[fileExtension] || contentTypes.txt;
+
+      return { response: await readFile(asset), contentType };
+
     } catch (err) {
       if (retryCount > 5) {
         logger.error("handleStaticFile:", err.toString());
-        response.statusCode = 404;
 
-        return response.end();
+        return { statusCode: 404 };
       }
 
       filePath = `${publicPath}/${appName}.html`;
     }
   }
+
+  return { statusCode: 404 };
 };
 
 const staticFileRouteInjectable = getInjectable({
