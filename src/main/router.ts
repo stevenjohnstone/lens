@@ -10,7 +10,7 @@ import path from "path";
 import { readFile } from "fs-extra";
 import type { Cluster } from "../common/cluster/cluster";
 import { apiPrefix, appName, publicPath, isDevelopment, webpackDevServerPort } from "../common/vars";
-import { KubeconfigRoute, MetricsRoute, PortForwardRoute, VersionRoute } from "./routes";
+import { KubeconfigRoute, MetricsRoute, VersionRoute } from "./routes";
 import logger from "./logger";
 
 export interface RouterRequestOpts {
@@ -174,7 +174,6 @@ export class Router {
 
     // Port-forward API (the container port and local forwarding port are obtained from the query parameters)
     this.router.add({ method: "post", path: `${apiPrefix}/pods/port-forward/{namespace}/{resourceType}/{resourceName}` }, this.dependencies.routePortForward);
-    this.router.add({ method: "get", path: `${apiPrefix}/pods/port-forward/{namespace}/{resourceType}/{resourceName}` }, PortForwardRoute.routeCurrentPortForward);
   }
 }
 
