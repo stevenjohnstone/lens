@@ -60,15 +60,11 @@ function getMimeType(filename: string) {
   return mimeTypes[path.extname(filename).slice(1)] || "text/plain";
 }
 
-interface Dependencies {
-  routePortForward: (request: LensApiRequest) => Promise<void>
-}
-
 export class Router {
   protected router = new Call.Router();
   protected static rootPath = path.resolve(__static);
 
-  public constructor(private dependencies: Dependencies) {
+  public constructor() {
     this.addRoutes();
   }
 
@@ -171,9 +167,6 @@ export class Router {
     // Metrics API
     this.router.add({ method: "post", path: `${apiPrefix}/metrics` }, MetricsRoute.routeMetrics);
     this.router.add({ method: "get", path: `${apiPrefix}/metrics/providers` }, MetricsRoute.routeMetricsProviders);
-
-    // Port-forward API (the container port and local forwarding port are obtained from the query parameters)
-    this.router.add({ method: "post", path: `${apiPrefix}/pods/port-forward/{namespace}/{resourceType}/{resourceName}` }, this.dependencies.routePortForward);
   }
 }
 
