@@ -4,8 +4,7 @@
  */
 import { getInjectable } from "@ogre-tools/injectable";
 import type {
-  LensApiRequest,
-  LensApiResult, SupportedFileExtension,
+  LensApiRequest, Route, SupportedFileExtension,
 } from "../router";
 import { contentTypes } from "../router";
 import logger from "../logger";
@@ -26,7 +25,7 @@ interface Dependencies {
 const staticFileRoute = ({ readFile }: Dependencies) => async ({
   params,
   raw: { req },
-}: LensApiRequest): Promise<LensApiResult> => {
+}: LensApiRequest) => {
   const staticPath = path.resolve(__static);
 
 
@@ -85,7 +84,7 @@ const staticFileRoute = ({ readFile }: Dependencies) => async ({
 const staticFileRouteInjectable = getInjectable({
   id: "static-file-route",
 
-  instantiate: (di) => ({
+  instantiate: (di): Route<Buffer> => ({
     method: "get",
     path: `/{path*}`,
     handler: staticFileRoute({ readFile: di.inject(readFileInjectable) }),

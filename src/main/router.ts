@@ -132,10 +132,10 @@ export class Router {
   protected router = new Call.Router();
   protected static rootPath = path.resolve(__static);
 
-  constructor(routes: Route[]) {
+  constructor(routes: Route<any>[]) {
     routes.forEach(route => {
       this.router.add({ method: route.method, path: route.path }, async (request: LensApiRequest) => {
-        let result: LensApiResult | void;
+        let result: LensApiResult<any> | void;
 
         try {
           result = await route.handler(request);
@@ -213,16 +213,16 @@ interface LensApiResultContentType {
   respond: (content: any, statusCode: number, response: http.ServerResponse) => void;
 }
 
-export interface LensApiResult {
+export interface LensApiResult<TResult> {
   statusCode?: number;
-  response?: any;
+  response?: TResult;
   error?: any;
   contentType?: LensApiResultContentType;
   headers?: { Location: string };
 }
 
-export interface Route {
+export interface Route<TResponse> {
   path: string;
   method: "get" | "post" | "put" | "patch" | "delete";
-  handler: (request: LensApiRequest) => Promise<LensApiResult>;
+  handler: (request: LensApiRequest) => Promise<LensApiResult<TResponse>> | Promise<void>;
 }
