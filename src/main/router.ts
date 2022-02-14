@@ -139,7 +139,7 @@ const handleRoute = (route: Route<any>) => async (request: LensApiRequest) => {
   if (!result) {
     const mappedResult = contentTypes.txt.resultMapper({
       statusCode: 204,
-      response: null,
+      response: undefined,
     });
 
     writeServerResponse(mappedResult);
@@ -181,5 +181,9 @@ const writeServerResponseFor =
         return;
       }
 
-      serverResponse.end(content);
+      if (content) {
+        serverResponse.end(content);
+      } else {
+        serverResponse.end();
+      }
     };
