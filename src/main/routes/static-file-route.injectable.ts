@@ -4,9 +4,8 @@
  */
 import { getInjectable } from "@ogre-tools/injectable";
 import type {
-  LensApiRequest, Route, SupportedFileExtension,
+  LensApiRequest, Route,
 } from "../router";
-import { contentTypes } from "../router";
 import logger from "../logger";
 import { routeInjectionToken } from "../router/router.injectable";
 import {
@@ -17,6 +16,8 @@ import {
 } from "../../common/vars";
 import path from "path";
 import readFileInjectable from "../../common/fs/read-file.injectable";
+import type { SupportedFileExtension } from "../router-content-types";
+import { contentTypes } from "../router-content-types";
 
 interface Dependencies {
   readFile: (path: string) => Promise<Buffer>
