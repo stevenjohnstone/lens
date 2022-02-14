@@ -108,7 +108,7 @@ export async function upgradeRelease(name: string, chart: string, values: any, n
 
     return {
       log: output,
-      release: getRelease(name, namespace, kubeconfigPath, kubectlPath),
+      release: await getRelease(name, namespace, kubeconfigPath, kubectlPath),
     };
   } finally {
     await fse.unlink(valuesFilePath);
