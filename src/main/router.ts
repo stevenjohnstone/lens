@@ -224,5 +224,11 @@ export interface LensApiResult<TResult> {
 export interface Route<TResponse> {
   path: string;
   method: "get" | "post" | "put" | "patch" | "delete";
-  handler: (request: LensApiRequest) => Promise<LensApiResult<TResponse>> | Promise<void>;
+  handler: (
+    request: LensApiRequest
+  ) =>
+    | Promise<LensApiResult<TResponse>>
+    | Promise<void>
+    | LensApiResult<TResponse>
+    | void;
 }
