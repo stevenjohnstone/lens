@@ -28,7 +28,6 @@ import { startUpdateChecking } from "./app-updater";
 import { IpcRendererNavigationEvents } from "../renderer/navigation/events";
 import { pushCatalogToRenderer } from "./catalog-pusher";
 import { catalogEntityRegistry } from "./catalog";
-import { HelmRepoManager } from "./helm/helm-repo-manager";
 import { syncGeneralEntities, syncWeblinks } from "./catalog-sources";
 import configurePackages from "../common/configure-packages";
 import { PrometheusProviderRegistry } from "./prometheus";
@@ -158,8 +157,6 @@ di.runSetups().then(() => {
     WeblinkStore.createInstance();
 
     syncWeblinks();
-
-    HelmRepoManager.createInstance(); // create the instance
 
     const router = di.inject(routerInjectable);
     const shellApiRequest = di.inject(shellApiRequestInjectable);
