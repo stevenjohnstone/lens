@@ -5,9 +5,9 @@
 
 import type { Cluster } from "../../common/cluster/cluster";
 import logger from "../logger";
-import { HelmRepoManager } from "./helm-repo-manager";
 import { HelmChartManager } from "./helm-chart-manager";
 import { deleteRelease, getHistory, getRelease, getValues, installChart, listReleases, rollback, upgradeRelease } from "./helm-release-manager";
+import type { HelmRepo } from "../../common/helm-repo";
 
 interface GetReleaseValuesArgs {
   cluster: Cluster;
@@ -15,7 +15,14 @@ interface GetReleaseValuesArgs {
   all: boolean;
 }
 
-class HelmService {
+interface Dependencies {
+  getRepositories: () => Promise<HelmRepo[]>
+  getRepository: (name: string) => Promise<HelmRepo>
+}
+
+export class HelmService {
+  constructor(private dependencies: Dependencies) {}
+
   public async installChart(cluster: Cluster, data: { chart: string; values: {}; name: string; namespace: string; version: string }) {
     const proxyKubeconfig = await cluster.getProxyKubeconfigPath();
 
@@ -23,7 +30,7 @@ class HelmService {
   }
 
   public async listCharts() {
-    const repositories = await HelmRepoManager.getInstance().repositories();
+    const repositories = await this.dependencies.getRepositories();
 
     return Object.fromEntries(
       await Promise.all(repositories.map(async repo => [repo.name, await HelmChartManager.forRepo(repo).charts()])),
@@ -31,7 +38,7 @@ class HelmService {
   }
 
   public async getChart(repoName: string, chartName: string, version = "") {
-    const repo = await HelmRepoManager.getInstance().repo(repoName);
+    const repo = await this.dependencies.getRepository(repoName);
     const chartManager = HelmChartManager.forRepo(repo);
 
     return {
@@ -41,7 +48,7 @@ class HelmService {
   }
 
   public async getChartValues(repoName: string, chartName: string, version = "") {
-    const repo = await HelmRepoManager.getInstance().repo(repoName);
+    const repo = await this.dependencies.getRepository(repoName);
 
     return HelmChartManager.forRepo(repo).getValues(chartName, version);
   }
@@ -105,5 +112,3 @@ class HelmService {
     await rollback(releaseName, namespace, revision, proxyKubeconfig);
   }
 }
-
-export const helmService = new HelmService();

@@ -4,9 +4,9 @@
  */
 import { apiPrefix } from "../../../../common/vars";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import { getInjectable } from "@ogre-tools/injectable";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 interface InstallChartResponse {
   log: string;
@@ -16,19 +16,23 @@ interface InstallChartResponse {
 const installChartRouteInjectable = getInjectable({
   id: "install-chart-route",
 
-  instantiate: () : Route<InstallChartResponse> => ({
-    method: "post",
-    path: `${apiPrefix}/v2/releases`,
+  instantiate: (di): Route<InstallChartResponse> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async (request) => {
-      const { payload, cluster } = request;
+    return {
+      method: "post",
+      path: `${apiPrefix}/v2/releases`,
 
-      return {
-        response: await helmService.installChart(cluster, payload),
-        statusCode: 201,
-      };
-    },
-  }),
+      handler: async (request) => {
+        const { payload, cluster } = request;
+
+        return {
+          response: await helmService.installChart(cluster, payload),
+          statusCode: 201,
+        };
+      },
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });

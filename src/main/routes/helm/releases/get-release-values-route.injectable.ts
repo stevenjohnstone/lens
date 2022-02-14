@@ -4,34 +4,42 @@
  */
 import { apiPrefix } from "../../../../common/vars";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import { getInjectable } from "@ogre-tools/injectable";
 import { getBoolean } from "../../../utils/parse-query";
 import { contentTypes } from "../../../router-content-types";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 const getReleaseRouteValuesInjectable = getInjectable({
   id: "get-release-values-route",
 
-  instantiate: (): Route<string> => ({
-    method: "get",
-    path: `${apiPrefix}/v2/releases/{namespace}/{release}/values`,
+  instantiate: (di): Route<string> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async (request) => {
-      const { cluster, params: { namespace, release }, query } = request;
-      const all = getBoolean(query, "all");
+    return {
+      method: "get",
+      path: `${apiPrefix}/v2/releases/{namespace}/{release}/values`,
 
-      return {
-        response: await helmService.getReleaseValues(release, {
+      handler: async (request) => {
+        const {
           cluster,
-          namespace,
-          all,
-        }),
+          params: { namespace, release },
+          query,
+        } = request;
+        const all = getBoolean(query, "all");
 
-        contentType: contentTypes.txt,
-      };
-    },
-  }),
+        return {
+          response: await helmService.getReleaseValues(release, {
+            cluster,
+            namespace,
+            all,
+          }),
+
+          contentType: contentTypes.txt,
+        };
+      },
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });

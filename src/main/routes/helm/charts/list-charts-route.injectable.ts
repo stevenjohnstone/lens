@@ -5,20 +5,24 @@
 import { getInjectable } from "@ogre-tools/injectable";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { apiPrefix } from "../../../../common/vars";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 const listChartsRouteInjectable = getInjectable({
   id: "list-charts-route",
 
-  instantiate: (): Route<any> => ({
-    method: "get",
-    path: `${apiPrefix}/v2/charts`,
+  instantiate: (di): Route<any> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async () => ({
-      response: await helmService.listCharts(),
-    }),
-  }),
+    return {
+      method: "get",
+      path: `${apiPrefix}/v2/charts`,
+
+      handler: async () => ({
+        response: await helmService.listCharts(),
+      }),
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });

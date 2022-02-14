@@ -4,29 +4,33 @@
  */
 import { apiPrefix } from "../../../../common/vars";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import { getInjectable } from "@ogre-tools/injectable";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 const deleteReleaseRouteInjectable = getInjectable({
   id: "delete-release-route",
 
-  instantiate: (): Route<string> => ({
-    method: "delete",
-    path: `${apiPrefix}/v2/releases/{namespace}/{release}`,
+  instantiate: (di): Route<string> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async (request) => {
-      const { cluster, params } = request;
+    return {
+      method: "delete",
+      path: `${apiPrefix}/v2/releases/{namespace}/{release}`,
 
-      return {
-        response: await helmService.deleteRelease(
-          cluster,
-          params.release,
-          params.namespace,
-        ),
-      };
-    },
-  }),
+      handler: async (request) => {
+        const { cluster, params } = request;
+
+        return {
+          response: await helmService.deleteRelease(
+            cluster,
+            params.release,
+            params.namespace,
+          ),
+        };
+      },
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });

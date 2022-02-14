@@ -3,32 +3,42 @@
  * Licensed under MIT License. See LICENSE in root directory for more information.
  */
 
-import { helmService } from "../helm-service";
-import { HelmRepoManager } from "../helm-repo-manager";
-
-const mockHelmRepoManager = jest.spyOn(HelmRepoManager, "getInstance").mockImplementation();
+import type { HelmService } from "../helm-service";
+import { getDiForUnitTesting } from "../../getDiForUnitTesting";
+import getHelmRepositoriesInjectable from "../repositories/get-helm-repositories/get-helm-repositories.injectable";
+import asyncFn, { AsyncFnMock } from "@async-fn/jest";
+import helmServiceInjectable from "../helm-service.injectable";
+import type { HelmRepo } from "../../../common/helm-repo";
 
 jest.mock("../helm-chart-manager");
 
 describe("Helm Service tests", () => {
-  afterEach(() => {
-    jest.resetAllMocks();
+  let getRepositoriesMock: AsyncFnMock<() => Promise<HelmRepo[]>>;
+  let helmService: HelmService;
+
+  beforeEach(async () => {
+    const di = getDiForUnitTesting({ doGeneralOverrides: true });
+
+    getRepositoriesMock = asyncFn();
+
+    di.override(getHelmRepositoriesInjectable, () => getRepositoriesMock);
+
+    await di.runSetups();
+
+    helmService = di.inject(helmServiceInjectable);
   });
 
   it("list charts with deprecated entries", async () => {
-    mockHelmRepoManager.mockReturnValue({
-      init: jest.fn(),
-      repositories: jest.fn().mockImplementation(async () => {
-        return [
-          { name: "stable", url: "stableurl" },
-          { name: "experiment", url: "experimenturl" },
-        ];
-      }),
-    });
+    const actualPromise = helmService.listCharts();
 
-    const charts = await helmService.listCharts();
+    await getRepositoriesMock.resolve([
+      { name: "stable", url: "stableurl" },
+      { name: "experiment", url: "experimenturl" },
+    ]);
 
-    expect(charts).toEqual({
+    const actual = await actualPromise;
+
+    expect(actual).toEqual({
       stable: {
         "apm-server": [
           {
@@ -126,18 +136,15 @@ describe("Helm Service tests", () => {
   });
 
   it("list charts sorted by version in descending order", async () => {
-    mockHelmRepoManager.mockReturnValue({
-      init: jest.fn(),
-      repositories: jest.fn().mockImplementation(async () => {
-        return [
-          { name: "bitnami", url: "bitnamiurl" },
-        ];
-      }),
-    });
+    const actualPromise = helmService.listCharts();
 
-    const charts = await helmService.listCharts();
+    await getRepositoriesMock.resolve([
+      { name: "bitnami", url: "bitnamiurl" },
+    ]);
 
-    expect(charts).toEqual({
+    const actual = await actualPromise;
+
+    expect(actual).toEqual({
       bitnami: {
         "hotdog": [
           {

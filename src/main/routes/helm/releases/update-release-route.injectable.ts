@@ -4,9 +4,9 @@
  */
 import { apiPrefix } from "../../../../common/vars";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import { getInjectable } from "@ogre-tools/injectable";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 interface UpdateReleaseResponse {
   log: string;
@@ -16,23 +16,23 @@ interface UpdateReleaseResponse {
 const updateReleaseRouteInjectable = getInjectable({
   id: "update-release-route",
 
-  instantiate: (): Route<UpdateReleaseResponse> => ({
-    method: "put",
-    path: `${apiPrefix}/v2/releases/{namespace}/{release}`,
+  instantiate: (di): Route<UpdateReleaseResponse> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async ({
-      cluster,
-      params,
-      payload,
-    }) => ({
-      response: await helmService.updateRelease(
-        cluster,
-        params.release,
-        params.namespace,
-        payload,
-      ),
-    }),
-  }),
+    return {
+      method: "put",
+      path: `${apiPrefix}/v2/releases/{namespace}/{release}`,
+
+      handler: async ({ cluster, params, payload }) => ({
+        response: await helmService.updateRelease(
+          cluster,
+          params.release,
+          params.namespace,
+          payload,
+        ),
+      }),
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });

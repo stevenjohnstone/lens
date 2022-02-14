@@ -4,25 +4,29 @@
  */
 import { apiPrefix } from "../../../../common/vars";
 import type { Route } from "../../../router";
-import { helmService } from "../../../helm/helm-service";
 import { routeInjectionToken } from "../../../router/router.injectable";
 import { getInjectable } from "@ogre-tools/injectable";
+import helmServiceInjectable from "../../../helm/helm-service.injectable";
 
 const listReleasesRouteInjectable = getInjectable({
   id: "list-releases-route",
 
-  instantiate: (): Route<Record<string, any>> => ({
-    method: "get",
-    path: `${apiPrefix}/v2/releases/{namespace?}`,
+  instantiate: (di): Route<Record<string, any>> => {
+    const helmService = di.inject(helmServiceInjectable);
 
-    handler: async (request) => {
-      const { cluster, params } = request;
+    return {
+      method: "get",
+      path: `${apiPrefix}/v2/releases/{namespace?}`,
 
-      return {
-        response: await helmService.listReleases(cluster, params.namespace),
-      };
-    },
-  }),
+      handler: async (request) => {
+        const { cluster, params } = request;
+
+        return {
+          response: await helmService.listReleases(cluster, params.namespace),
+        };
+      },
+    };
+  },
 
   injectionToken: routeInjectionToken,
 });
