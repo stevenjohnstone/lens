@@ -14,7 +14,6 @@ import "../common/vars";
 
 export interface RouterRequestOpts {
   req: http.IncomingMessage;
-  res: http.ServerResponse;
   cluster: Cluster;
   params: RouteParams;
   url: URL;
@@ -35,7 +34,6 @@ export interface LensApiRequest<P = any> {
   payload: P;
   params: RouteParams;
   cluster: Cluster;
-  response: http.ServerResponse;
   query: URLSearchParams;
   raw: {
     req: http.IncomingMessage;
@@ -64,9 +62,9 @@ export class Router {
     const routeFound = !matchingRoute.isBoom;
 
     if (routeFound) {
-      const request = await this.getRequest({ req, res, cluster, url, params: matchingRoute.params });
+      const request = await this.getRequest({ req, cluster, url, params: matchingRoute.params });
 
-      await matchingRoute.route(request);
+      await matchingRoute.route(request, res);
 
       return true;
     }
@@ -75,7 +73,7 @@ export class Router {
   }
 
   protected async getRequest(opts: RouterRequestOpts): Promise<LensApiRequest> {
-    const { req, res, url, cluster, params } = opts;
+    const { req, url, cluster, params } = opts;
 
     const { payload } = await this.dependencies.parseRequest(req, null, {
       parse: true,
@@ -88,7 +86,6 @@ export class Router {
       raw: {
         req,
       },
-      response: res,
       query: url.searchParams,
       payload,
       params,
@@ -118,10 +115,10 @@ export interface Route<TResponse> {
   handler: RouteHandler<TResponse>;
 }
 
-const handleRoute = (route: Route<any>) => async (request: LensApiRequest) => {
+const handleRoute = (route: Route<any>) => async (request: LensApiRequest, response: http.ServerResponse) => {
   let result: LensApiResult<any> | void;
 
-  const writeServerResponse = writeServerResponseFor(request.response);
+  const writeServerResponse = writeServerResponseFor(response);
 
   try {
     result = await route.handler(request);
