@@ -110,6 +110,76 @@ HELM_REPOSITORY_CACHE=some-helm-repository-cache-path`,
         );
       });
 
+      it("when updating Helm repositories reject with any other error, rejects", async () => {
+        await execFileMock.reject(new Error("any-other-error"));
+
+        expect(responseStub.statusCode).toBe(422);
+        expect(responseStub.end).toHaveBeenCalledWith("Error: any-other-error");
+      });
+
+      describe("when updating Helm repositories reject with error about not having repositories", () => {
+        beforeEach(async () => {
+          execFileMock.mockClear();
+
+          await execFileMock.reject(new Error("Error: some error. You must add one before updating. containing hint for no repositories"));
+        });
+
+        it('adds "bitnami" as default repository', () => {
+          expect(execFileMock).toHaveBeenCalledWith(
+            "some-helm-cli-path",
+            ["repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"],
+            undefined,
+          );
+        });
+
+        describe("when adding default repository resolves", () => {
+          beforeEach(async () => {
+            execFileMock.mockClear();
+            readFileMock.mockClear();
+
+            await execFileMock.resolve({ stdout: "irrelevant", stderr: null });
+          });
+
+          it("reads repositories from Helm config again", () => {
+            expect(readFileMock).toHaveBeenCalledWith("some-helm-repository-config-path", "utf8");
+          });
+
+          it("when repositories resolve, resolves", async () => {
+            await readFileMock.resolve(Buffer.from(`
+apiVersion: ""
+generated: "0001-01-01T00:00:00Z"
+repositories:
+  - caFile: ""
+    certFile: ""
+    insecure_skip_tls_verify: false
+    keyFile: ""
+    name: bitnami
+    pass_credentials_all: false
+    password: ""
+    url: https://charts.bitnami.com/bitnami
+    username: ""`));
+
+            expect(responseStub.statusCode).toBe(200);
+            expect(responseStub.end).toHaveBeenCalledWith(
+              JSON.stringify([
+                {
+                  caFile: "",
+                  certFile: "",
+                  insecure_skip_tls_verify: false,
+                  keyFile: "",
+                  name: "bitnami",
+                  pass_credentials_all: false,
+                  password: "",
+                  url: "https://charts.bitnami.com/bitnami",
+                  username: "",
+                  cacheFilePath: "some-helm-repository-cache-path/bitnami-index.yaml",
+                },
+              ]),
+            );
+          });
+        });
+      });
+
       describe("when updating Helm repositories resolve", () => {
         beforeEach(async () => {
           execFileMock.mockClear();

@@ -2,8 +2,10 @@
  * Copyright (c) OpenLens Authors. All rights reserved.
  * Licensed under MIT License. See LICENSE in root directory for more information.
  */
+import type { ErrorHandledResponse } from "../repositories/with-error-handling";
+
 interface Dependencies {
-  execHelm: (args: string[]) => Promise<string>
+  execHelm: (args: string[]) => Promise<ErrorHandledResponse<string>>
 }
 
 export type HelmEnv = Record<string, string> & {
@@ -12,9 +14,9 @@ export type HelmEnv = Record<string, string> & {
 };
 
 export const getHelmEnv = ({ execHelm }: Dependencies) => async () => {
-  const output = await execHelm(["env"]);
+  const { response } = await execHelm(["env"]);
 
-  const lines = output.split(/\r?\n/); // split by new line feed
+  const lines = response.split(/\r?\n/); // split by new line feed
   const env: HelmEnv = {};
 
   lines.forEach((line: string) => {

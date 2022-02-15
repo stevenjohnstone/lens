@@ -7,15 +7,16 @@ import { execHelm } from "./exec-helm";
 import helmCliInjectable from "../helm-cli.injectable";
 import execFileInjectable from "./exec-file/exec-file.injectable";
 import loggerInjectable from "../../../common/logger.injectable";
+import { withErrorHandling } from "../repositories/with-error-handling";
 
 const execHelmInjectable = getInjectable({
   id: "exec-helm",
   instantiate: (di) =>
-    execHelm({
+    withErrorHandling(execHelm({
       helmCli: di.inject(helmCliInjectable),
       execFile: di.inject(execFileInjectable),
       logger: di.inject(loggerInjectable),
-    }),
+    })),
 });
 
 export default execHelmInjectable;

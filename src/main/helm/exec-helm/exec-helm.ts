@@ -18,11 +18,7 @@ export const execHelm = ({ helmCli, execFile, logger } : Dependencies) =>  async
 
   const helmCliPath = await helmCli.binaryPath();
 
-  try {
-    const { stdout } = await execFile(helmCliPath, args, options);
+  const actual = await execFile(helmCliPath, args, options);
 
-    return stdout;
-  } catch (error) {
-    throw error?.stderr || error;
-  }
+  return actual.stdout;
 };
