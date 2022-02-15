@@ -2,14 +2,15 @@
  * Copyright (c) OpenLens Authors. All rights reserved.
  * Licensed under MIT License. See LICENSE in root directory for more information.
  */
-import logger from "../../../logger";
 import type { HelmRepo } from "../../../../common/helm-repo";
+import type { Logger } from "../../../../common/logger";
 
 interface Dependencies {
   execHelm: (args: string[]) => Promise<any>
+  logger: Logger
 }
 
-export const addHelmRepository = ({ execHelm } : Dependencies) => async (repo: HelmRepo) => {
+export const addHelmRepository = ({ execHelm, logger } : Dependencies) => async (repo: HelmRepo) => {
   const {
     name,
     url,

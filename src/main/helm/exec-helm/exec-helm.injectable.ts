@@ -6,6 +6,7 @@ import { getInjectable } from "@ogre-tools/injectable";
 import { execHelm } from "./exec-helm";
 import helmCliInjectable from "../helm-cli.injectable";
 import execFileInjectable from "./exec-file/exec-file.injectable";
+import loggerInjectable from "../../../common/logger.injectable";
 
 const execHelmInjectable = getInjectable({
   id: "exec-helm",
@@ -13,6 +14,7 @@ const execHelmInjectable = getInjectable({
     execHelm({
       helmCli: di.inject(helmCliInjectable),
       execFile: di.inject(execFileInjectable),
+      logger: di.inject(loggerInjectable),
     }),
 });
 
